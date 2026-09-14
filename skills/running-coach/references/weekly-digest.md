@@ -8,7 +8,7 @@ cities run in, "between the lines" insights, and a next-week plan.
 - Workflow (the four steps, start to finish)
 - Scripts (commands and what each prints)
 - Goal model
-- Design decisions, locked with Karan
+- Design decisions
 - Context and gotchas
 
 ## Workflow
@@ -32,7 +32,7 @@ cities run in, "between the lines" insights, and a next-week plan.
    been planned, add `--plan-km <km>` so the next-week section leads with it.
 3. **Read the summary it prints** — distance against goal, the percentage, and
    which insights fired. If it prints `note:` lines, they name the MCP call that
-   would fill that gap; mention them to Karan rather than silently dropping the
+   would fill that gap; mention them to the user rather than silently dropping the
    content.
 4. **Hand over the file path.** The HTML is self-contained and ready to send.
    There is no email connector, so do not attempt to send it.
@@ -56,10 +56,9 @@ Carry `--start-in` through whenever planning used it: the digest re-projects
 the run, and without the same start time it would band the run as if it were
 starting now and could disagree with the plan just reported.
 
-It needs `jinja2` for the render and checks for it up front, re-execing into a
-project `.venv` that has it if the current interpreter doesn't. When a step
-does fail, the message says what was already written, so only the remaining
-part needs redoing.
+It needs nothing beyond the standard library. When a step does fail, the
+message says what was already written, so only the remaining part needs
+redoing.
 
 **`analyze.py`** — weekly totals, rolling goal, cities, insights →
 `digest_data.json`. Prints the headline numbers and the insight keys that fired.
@@ -70,9 +69,12 @@ python3 scripts/planning/plan_run.py 8 --json | \
     python3 scripts/digest/analyze.py --plan -  # or pipe a plan straight in
 ```
 
-**`build_email.py`** — maps `digest_data.json` into the Jinja2 template and
-writes `weekly_run_digest.html`. Prints the subject line. `--seed` fixes the
-masthead title so output is reproducible.
+**`build_email.py`** — maps `digest_data.json` into `assets/digest_email.html`
+and writes `weekly_run_digest.html`. Prints the subject line. `--seed` fixes
+the masthead title so output is reproducible. The template is a
+`string.Template`: static chrome with `${...}` placeholders, where the
+repeating rows are built by the `_row` helpers in the script and substituted
+as single blocks.
 
 **`insights.py`** — not a CLI. Each generator is a pure function that returns
 nothing when its pattern is absent. Add an insight by adding a generator and
@@ -93,7 +95,7 @@ The knobs are `TRAILING_WEEKS` and `FOCUS_MULTIPLIERS` at the top of
 `analyze.py`, each documented with why its value is what it is. Do not
 substitute a fixed target.
 
-## Design decisions, locked with Karan
+## Design decisions
 
 - **Cursive** (`fonts.script`, Pinyon Script with a Snell Roundhand fallback)
   for the masthead title *and* the section headers only.
@@ -107,7 +109,7 @@ substitute a fixed target.
   and rendering a PNG, which is the only thing that would pull matplotlib in.
 - Required blocks: funky title, funky subtext, stats and goal, cities,
   intriguing stats, next-week plan.
-- Fonts are Apple-native first so the email renders bespoke on Karan's Mac and
+- Fonts are Apple-native first so the email renders bespoke on a Mac and
   survives clients that strip web fonts; Google Fonts are an enhancement and
   web-safe faces are the floor.
 - Re-skinning means editing `THEME` / `FONTS` in `build_email.py` or the
@@ -118,7 +120,7 @@ substitute a fixed target.
 - Runs are phone-GPS: no heart-rate or cadence streams, so insights lean on
   pace, best efforts, elevation and route repetition.
 - Font CDNs are blocked in the sandbox, so the cursive cannot be previewed
-  there. It renders on Karan's machine.
+  there. It renders on the recipient's machine.
 - `weather` returns climatology, not observed conditions. The athlete's own run
   notes are the ground truth for what the weather actually did; the climate
   normals only supply the temperature envelope.

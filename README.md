@@ -1,16 +1,15 @@
 # running-coach
 
-Karan's personal running assistant. The deliverable is a portable **Agent
-Skill** at `skills/running-coach/`, with a Claude **plugin** wrapped around the
-repo root that adds the Strava / Spotify / AccuWeather connectors. Three
-capabilities:
+A portable **Agent Skill** that turns Strava, Spotify and AccuWeather data into
+three things:
 
 1. **Plan runs** — recent Strava efforts to an estimated pace, a projected
    finish (Riegel), and an effort band from the trailing load.
    `scripts/planning/plan_run.py`.
-2. **Weekly digest** — the Strava week to a self-contained HTML email: stats
-   against a rolling goal derived from Karan's own mileage, the cities run in,
-   data-driven insights, and a next-week plan. `scripts/digest/run_pipeline.py`.
+2. **Weekly digest** — the Strava week as a self-contained HTML email: stats
+   against a rolling goal derived from the athlete's own mileage, the cities
+   run in, data-driven insights, and a next-week plan.
+   `scripts/digest/run_pipeline.py`.
 3. **Run playlist** — a playlist sized to the projected finish time, matched to
    taste and recent listening. `scripts/playlist/build_playlist.py`.
 
@@ -25,39 +24,32 @@ agent --(Strava: / Spotify: / AccuWeather: MCP)--> cache.py put --> the cache
 the cache --> plan_run.py / run_pipeline.py / build_playlist.py --> output
 ```
 
+That split is what makes the skill portable: it never needs credentials of its
+own, and it runs the same whether the connectors are local, remote or absent.
+
 ## Layout
 
-`skills/running-coach/` is self-contained and has no knowledge of the plugin
-around it — copy that one directory anywhere and it works. Everything at the
-repo root outside it is the Claude wrapper. The repo is pure source: no cache,
-no generated output, nothing to clean.
+`skills/running-coach/` is the skill and is entirely self-contained — copy that
+one directory anywhere and it works. Everything at the repo root is scaffolding
+that stays out of the published artifact. The repo is pure source: no cache, no
+generated output, nothing to clean.
 
 ```
 running-coach/
 ├── skills/running-coach/          THE SKILL — portable, spec-compliant
 │   ├── SKILL.md                   entry point; routes to the 3 capabilities
-│   ├── requirements.txt           jinja2, and nothing else
 │   ├── references/                workflow specs, read on demand
 │   ├── scripts/                   cache.py + common/ + the 3 capabilities
-│   └── assets/                    digest_email.html.j2
-├── .claude-plugin/
-│   ├── plugin.json                the Claude plugin manifest
-│   └── marketplace.json           makes the repo its own marketplace
-├── .mcp.json                      the 3 bundled connectors
-├── hooks/hooks.json               SessionStart: builds the jinja2 venv
+│   └── assets/                    digest_email.html
 ├── evals/                         three evaluation scenarios
-└── package.py                     builds the two zips, into dist/
+└── package.py                     validates and zips the skill, into dist/
 ```
 
-The cache and generated digests live in `~/.running-coach/`, never in the repo
-— see the table at the end for the full resolution order. `evals/`, `dist/` and
-`package.py` are excluded from both archives.
-
-## Installing as a skill (any agent)
+## Installing
 
 The skill follows the Agent Skills spec — `SKILL.md` with `name`/`description`
-frontmatter, the directory named to match. Anything that scans a skills root
-picks it up. Symlink or copy `skills/running-coach` into the relevant root:
+frontmatter, the directory named to match — so anything that scans a skills
+root picks it up. Symlink or copy `skills/running-coach` into that root:
 
 | Agent | Root |
 | --- | --- |
@@ -66,53 +58,28 @@ picks it up. Symlink or copy `skills/running-coach` into the relevant root:
 | OpenCode | `~/.config/opencode/skills/`, or the `.claude` / `.agents` roots |
 
 ```bash
-ln -s "$PWD/skills/running-coach" ~/.agents/skills/running-coach
+ln -s "$PWD/skills/running-coach" ~/.claude/skills/running-coach
 ```
 
-For claude.ai, build the zip and upload it under Customize → Skills:
+For claude.ai, build the archive and upload it under Settings → Capabilities →
+Skills:
 
 ```bash
-python3 package.py --skill
+python3 package.py
 ```
 
-Note that claude.ai caps skill descriptions at 200 characters and this one is
-619, so that upload needs a shortened `description` first. Every other target
-allows the full 1024.
+That writes `dist/running-coach.zip`, holding a single `running-coach/`
+directory at its root — an archive of loose files is rejected. Clients that
+expect the `.skill` extension take the same archive renamed.
 
-Installed as a bare skill there are no bundled connectors, so the session needs
-its own Strava, Spotify and AccuWeather connectors.
+Two things to know about the hosted sandbox on claude.ai. There are no bundled
+connectors, so the session needs its own Strava, Spotify and AccuWeather
+connectors for the agent to refresh the cache. And its filesystem is
+per-session, so the cache starts empty each time and is rebuilt from MCP rather
+than reused — everything still works, it just re-fetches. Locally the cache
+persists and `cache.py status` only asks for what has gone stale.
 
-## Installing as a Claude plugin
-
-This adds the three connectors and the dependency bootstrap on top of the same
-skill. From GitHub, with no packaging step — in Cowork, Customize → Plugins →
-Add marketplace and enter the repo URL; in Claude Code:
-
-```bash
-claude plugin marketplace add saklani-karan/running-coach
-claude plugin install running-coach@karan-run-plugins
-```
-
-Or build a package for Cowork's file upload with `python3 package.py
---plugin`.
-
-For day-to-day development, symlink the skill (as above) rather than the repo
-root. Claude Code would happily load the root in place as a plugin, but then
-the `SessionStart` hook writes `.plugin-data-dir` into the repo, which moves
-the cache to the plugin's data directory. To exercise the wrapper — hooks,
-connectors, the venv bootstrap — install it properly instead:
-
-```bash
-claude plugin marketplace add "$PWD" && claude plugin install running-coach@karan-run-plugins
-```
-
-Installing prompts for sign-in to Strava, and to Spotify and AccuWeather if you
-use those capabilities. Strava's connector is its official one and needs a
-Strava subscription; the other two are community servers, and their URLs are
-`userConfig` fields you can repoint without editing files. Bundling also scopes
-the tool names to `mcp__plugin_running-coach_Strava__list_activities`.
-
-## Running it (dev)
+## Running it
 
 Everything reads the cache and writes generated files beside it. From
 `skills/running-coach/`:
@@ -124,34 +91,34 @@ python3 scripts/digest/run_pipeline.py --plan-km 8 # digest, leading with that r
 python3 scripts/playlist/build_playlist.py 8       # build the Spotify prompt
 ```
 
-Every script takes `--help`, and most take `--json`.
+Every script takes `--help`, and most take `--json`. `cache.py status` names
+the exact MCP call behind each gap, which is how the agent knows what to fetch.
 
 ## Where the data goes
 
-`cache.py status` prints the directory it resolved, which is the first of these
-that applies:
+The cache and generated output live outside the skill, so the installed copy
+stays read-only and a clone resolves the same as any other install.
+`cache.py status` prints the directory it resolved, the first of these that
+applies:
 
 | Condition | Cache and output |
 | --- | --- |
 | `RUNNING_COACH_DATA` / `RUNNING_COACH_OUTPUT` set | those paths |
-| Running as an installed plugin | the plugin's persistent data directory |
-| Otherwise, including from this repo | `~/.running-coach/{data,output}` |
+| Otherwise | `~/.running-coach/{data,output}` |
 
-A plugin's install directory is replaced on update, so its cache has to live
-outside it. `$CLAUDE_PLUGIN_DATA` holds that path but is only promised to hook
-and MCP subprocesses, not to the Bash tool that runs these scripts — so the
-`SessionStart` hook also writes it to `.plugin-data-dir` at the plugin root,
-and `paths.py` reads that when the variable is absent.
+Never commit a copy of the cache: it holds real athlete data, including GPS
+polylines that decode to routes from home.
 
 ## Requirements
 
-Python 3.10+ and `jinja2`, which only the digest email needs. An installed
-plugin builds its own venv on first session. In this repo, `python3 -m venv
-.venv && .venv/bin/pip install -r skills/running-coach/requirements.txt`.
-Either way the digest scripts find that interpreter and re-exec into it, so
-plain `python3` works.
+Python 3.10+ and nothing else. No third-party packages, no virtualenv, no
+install step — `python3` works as-is, including inside a hosted sandbox where
+installing packages is not possible.
 
-## Status
+## Packaging
 
-Phase 3 complete: portable skill plus a Claude plugin wrapper, both validated
-with `claude plugin validate`. See `ROADMAP.md`.
+`python3 package.py --validate` checks the frontmatter against the Agent Skills
+spec: the six allowed keys, a kebab-case `name` matching the directory, and a
+`description` within limits. It also warns past 200 characters, which is
+roughly where claude.ai's picker truncates. `python3 package.py` runs the same
+checks and then writes the archive.

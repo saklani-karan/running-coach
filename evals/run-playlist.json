@@ -8,6 +8,6 @@
     "Reads the pinned playlist id from scripts/cache.py show playlist_state instead of from the reference markdown",
     "Follows the printed Spotify call sequence in order: remove_from_library on the pinned id, generate_playlist, save_to_library",
     "Writes the new playlist id back with scripts/cache.py put playlist_state, and does not edit references/run-playlist.md to record it",
-    "Mentions that Spotify cannot rename a playlist, so Karan renames the new one himself"
+    "Mentions that Spotify cannot rename a playlist, so the user renames the new one themselves"
   ]
 }

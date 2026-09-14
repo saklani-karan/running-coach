@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Weekly Almanac</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Pinyon+Script&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body{ margin:0; padding:0; background:${paper}; }
+  @media (max-width:600px){ .pad{ padding-left:26px !important; padding-right:26px !important; } .title{ font-size:44px !important; } }
+</style>
+</head>
+<body style="margin:0;padding:0;background:${paper};">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${subtext}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${paper};padding:30px 0;">
+<tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0"
+  style="max-width:600px;width:100%;background:${paper};border:1px solid ${hair};">
+
+  <!-- MASTHEAD -->
+  <tr><td class="pad" style="padding:34px 46px 0;">
+    <table role="presentation" width="100%"><tr>
+      <td style="font-family:${f_body};color:${inksoft};font-size:12px;letter-spacing:.24em;text-transform:uppercase;">${kicker}</td>
+      <td align="right" style="font-family:${f_body};color:${inksoft};font-size:12px;letter-spacing:.16em;text-transform:uppercase;">${date_range}</td>
+    </tr></table>
+    <div style="margin:10px 0 6px;"><div style="border-top:2px solid ${ink};font-size:0;line-height:0;margin:0;">&nbsp;</div></div>
+    <div style="margin:2px 0 14px;"><div style="border-top:1px solid ${ink};font-size:0;line-height:0;margin:0;">&nbsp;</div></div>
+
+    <div class="title" style="font-family:${f_script};color:${ink};font-size:58px;line-height:1.04;text-align:center;padding:4px 0 2px;">${title}</div>
+    <div style="font-family:${f_display};color:${inksoft};font-size:18px;font-style:italic;line-height:1.5;text-align:center;padding:12px 14px 20px;">${subtext}</div>
+    <div style="border-top:1px solid ${ink};font-size:0;line-height:0;margin:0;">&nbsp;</div>
+  </td></tr>
+
+  <!-- THE LEDGER -->
+  <tr><td class="pad" style="padding:24px 46px 8px;">
+    <div style="font-family:${f_script};color:${rust};font-size:29px;line-height:1.1;text-align:center;margin:0 0 8px;">The Ledger</div>
+    <table role="presentation" width="100%" style="border-collapse:collapse;">
+      <tr>${ledger_row_1}</tr>
+      <tr><td colspan="3" style="padding:2px 30px;"><div style="border-top:1px solid ${hair};font-size:0;line-height:0;margin:0;">&nbsp;</div></td></tr>
+      <tr>${ledger_row_2}</tr>
+    </table>
+  </td></tr>
+
+  <!-- THE RECKONING -->
+  <tr><td class="pad" style="padding:20px 46px 6px;">
+    <div style="border-top:1px solid ${ink};font-size:0;line-height:0;margin:0 0 18px;">&nbsp;</div>
+    <div style="font-family:${f_script};color:${rust};font-size:29px;line-height:1.1;text-align:center;margin:0 0 8px;">The Reckoning</div>
+    <p style="font-family:${f_body};color:${ink};font-size:17px;line-height:1.62;margin:8px 0 20px;">
+      <span style="float:left;font-family:${f_display};color:${rust};font-size:54px;line-height:.72;padding:6px 10px 0 0;">${prose_dropcap}</span>${prose_rest}
+    </p>
+    ${meters}
+    <div style="margin-top:20px;text-align:center;font-family:${f_body};color:${inksoft};font-size:12px;letter-spacing:.14em;text-transform:uppercase;">The weeks prior, in kilometres</div>
+    <div style="text-align:center;margin-top:8px;">
+      ${trailing}
+    </div>
+  </td></tr>
+
+  <!-- TERRITORY (cities) -->
+  <tr><td class="pad" style="padding:24px 46px 6px;">
+    <div style="border-top:1px solid ${ink};font-size:0;line-height:0;margin:0 0 18px;">&nbsp;</div>
+    <div style="font-family:${f_script};color:${rust};font-size:29px;line-height:1.1;text-align:center;margin:0 0 8px;">Territory</div>
+    <table role="presentation" width="100%" style="border-collapse:collapse;margin-top:4px;">
+      ${city_rows}
+    </table>
+  </td></tr>
+
+  <!-- FIELD NOTES -->
+  <tr><td class="pad" style="padding:24px 46px 6px;">
+    <div style="border-top:1px solid ${ink};font-size:0;line-height:0;margin:0 0 18px;">&nbsp;</div>
+    <div style="font-family:${f_script};color:${rust};font-size:29px;line-height:1.1;text-align:center;margin:0 0 8px;">Field Notes</div>
+    <table role="presentation" width="100%" style="border-collapse:collapse;margin-top:6px;">
+      ${note_rows}
+    </table>
+  </td></tr>
+
+  <!-- BETWEEN THE LINES -->
+  <tr><td class="pad" style="padding:24px 46px 6px;">
+    <div style="border-top:1px solid ${ink};font-size:0;line-height:0;margin:0 0 18px;">&nbsp;</div>
+    <div style="font-family:${f_script};color:${rust};font-size:29px;line-height:1.1;text-align:center;margin:0 0 8px;">Between the Lines</div>
+    <table role="presentation" width="100%" style="border-collapse:collapse;margin-top:6px;">
+      ${insight_rows}
+    </table>
+  </td></tr>
+
+  <!-- THE WEEK AHEAD -->
+  <tr><td class="pad" style="padding:24px 46px 8px;">
+    <div style="border-top:1px solid ${ink};font-size:0;line-height:0;margin:0 0 18px;">&nbsp;</div>
+    <div style="background:${panel};padding:24px 26px;">
+      <div style="font-family:${f_script};color:${rust};font-size:29px;line-height:1.1;text-align:center;margin:0 0 8px;">${plan_label}</div>
+      <div style="font-family:${f_display};color:${ink};font-size:23px;font-style:italic;text-align:center;margin:2px 0 16px;">${plan_headline}</div>
+      <table role="presentation" width="100%" style="border-collapse:collapse;">
+        ${plan_items}
+      </table>
+    </div>
+  </td></tr>
+
+  <!-- COLOPHON -->
+  <tr><td class="pad" style="padding:16px 46px 34px;">
+    <div style="border-top:1px solid ${ink};font-size:0;line-height:0;margin:0 0 14px;">&nbsp;</div>
+    <div style="font-family:${f_body};color:${inksoft};font-size:12.5px;line-height:1.7;text-align:center;letter-spacing:.04em;">
+      ${colophon1}<br>${colophon2}
+    </div>
+  </td></tr>
+
+</table>
+</td></tr></table>
+</body></html>

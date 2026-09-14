@@ -279,7 +279,7 @@ def analyze(data_dir=None, notes=None, planned=None):
         "week_end": week_end.strftime("%d %b %Y"),
         "week_in_progress": week_open,
         "days_remaining": days_remaining,
-        "athlete": (profile or {}).get("firstname") or "Karan",
+        "athlete": (profile or {}).get("firstname") or "the runner",
         "totals": {
             "distance_km": round(totals_dist / 1000, 2),
             "runs": len(week),

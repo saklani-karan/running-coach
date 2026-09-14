@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 """
-build_email.py — render the weekly digest email from assets/digest_email.html.j2.
+build_email.py — render the weekly digest email from assets/digest_email.html.
 
 A thin data-mapper: it turns digest_data.json (written by analyze.py) into the
-template context — theme, fonts, and content blocks — and renders the Jinja2
-template. To restyle, edit THEME / FONTS below or the .j2 file; to re-content,
-change the data. Requires jinja2.
+template context — theme, fonts, and content blocks — and fills the template.
+To restyle, edit THEME / FONTS below or the HTML file; to re-content, change
+the data.
+
+Standard library only. The template is a string.Template, not Jinja2: the
+repeating blocks are built by the _row helpers below and dropped in as single
+placeholders. string.Template rather than str.format because the template
+carries literal CSS braces, which str.format would require escaping throughout.
 
 Usage:
     python3 scripts/digest/build_email.py
@@ -17,10 +22,12 @@ import random
 import re
 import sys
 from pathlib import Path
+from string import Template
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # scripts/
 from common.paths import ASSETS_DIR, OUTPUT_DIR, ensure_dirs
-from common.runtime import ensure_dependency
+
+TEMPLATE_NAME = "digest_email.html"
 
 # ------------------------------------------------------------------ THEME
 # The whole look is these two dicts. Swap them to re-skin the digest.
@@ -171,6 +178,151 @@ def build_context(d, rng=random):
     }, title
 
 
+# ------------------------------------------------------------------ RENDER
+# Each block helper emits one repeating region of the template. The leading
+# "\n      " and trailing "      " on each row are part of the document's
+# indentation, not decoration: the template holds the first indent before the
+# placeholder and each row supplies its own thereafter.
+SPACER = '<div style="height:16px;"></div>'
+
+
+def _hr(weight, color, margin="0"):
+    return (f'<div style="border-top:{weight}px solid {color};font-size:0;'
+            f'line-height:0;margin:{margin};">&nbsp;</div>')
+
+
+def _figure(f, th, fo):
+    unit = (f'<span style="font-family:{fo["body"]};font-size:15px;'
+            f'color:{th["inksoft"]};"> {f["unit"]}</span>') if f["unit"] else ""
+    return (f'<td style="padding:10px 6px;text-align:center;vertical-align:bottom;">\n'
+            f'  <div style="font-family:{fo["figure"]};color:{th["ink"]};font-size:28px;'
+            f'font-weight:700;line-height:1;letter-spacing:-.02em;">{f["value"]}{unit}</div>\n'
+            f'  <div style="font-family:{fo["body"]};color:{th["inksoft"]};font-size:12px;'
+            f'letter-spacing:.16em;text-transform:uppercase;margin-top:9px;">{f["label"]}</div>\n'
+            f'</td>')
+
+
+def _meter(m, th, fo):
+    width = max(2, min(m["pct"], 100))
+    return (f'<table role="presentation" width="100%" style="border-collapse:collapse;margin-bottom:4px;">\n'
+            f'  <tr>\n'
+            f'    <td style="font-family:{fo["body"]};color:{th["ink"]};font-size:16px;">{m["label"]}</td>\n'
+            f'    <td align="right" style="font-family:{fo["figure"]};color:{th["ink"]};'
+            f'font-size:15px;">{m["fraction"]}\n'
+            f'      <span style="color:{m["color"]};font-size:13px;">&nbsp;({m["pct"]}%)</span></td>\n'
+            f'  </tr>\n'
+            f'</table>\n'
+            f'<div style="height:9px;background:{th["meterbg"]};border:1px solid {th["hair"]};">\n'
+            f'  <div style="height:9px;background:{m["color"]};width:{width}%;'
+            f'font-size:0;line-height:0;">&nbsp;</div>\n'
+            f'</div>')
+
+
+def _trailing(weeks, th, fo):
+    return " &nbsp;&middot;&nbsp; ".join(
+        f'<span style="font-family:{fo["figure"]};color:{th["ink"]};font-size:16px;">{w["km"]}</span>'
+        f'<span style="font-family:{fo["body"]};color:{th["inksoft"]};font-size:11px;"> {w["wk"]}</span>'
+        for w in weeks)
+
+
+def _city_rows(cities, th, fo):
+    rows = []
+    for i, c in enumerate(cities):
+        region = (f'<span style="font-family:{fo["body"]};color:{th["inksoft"]};'
+                  f'font-size:14px;font-style:italic;">, {c["region"]}</span>') if c.get("region") else ""
+        rule = "" if i == len(cities) - 1 else f'<tr><td colspan="2">{_hr(1, th["hair"])}</td></tr>'
+        rows.append(
+            f'\n      <tr>\n'
+            f'        <td style="font-family:{fo["display"]};color:{th["ink"]};'
+            f'font-size:22px;padding:8px 0;">{c["name"]}{region}</td>\n'
+            f'        <td align="right" style="font-family:{fo["figure"]};color:{th["ink"]};'
+            f'font-size:13px;white-space:nowrap;">{c["runs"]} '
+            f'{"run" if c["runs"] == 1 else "runs"} &nbsp;&middot;&nbsp; {c["distance_km"]} km</td>\n'
+            f'      </tr>\n'
+            f'      {rule}\n      ')
+    return "".join(rows)
+
+
+def _note_rows(notes, th, fo):
+    rows = []
+    for i, n in enumerate(notes):
+        quote = (f' <span style="color:{th["rust"]};">&ldquo;{n["quote"]}&rdquo;</span>') if n["quote"] else ""
+        rule = "" if i == len(notes) - 1 else f'<tr><td>{_hr(1, th["hair"])}</td></tr>'
+        rows.append(
+            f'\n      <tr><td style="padding:14px 0;">\n'
+            f'        <table role="presentation" width="100%"><tr>\n'
+            f'          <td style="font-family:{fo["display"]};color:{th["ink"]};'
+            f'font-size:19px;font-style:italic;">{n["label"]}{quote}</td>\n'
+            f'          <td align="right" style="font-family:{fo["body"]};color:{th["inksoft"]};'
+            f'font-size:12px;letter-spacing:.12em;text-transform:uppercase;'
+            f'white-space:nowrap;">{n["dateline"]}</td>\n'
+            f'        </tr></table>\n'
+            f'        <div style="font-family:{fo["body"]};color:{th["ink"]};'
+            f'font-size:16px;margin-top:8px;">{n["stats"]}</div>\n'
+            f'        <div style="font-family:{fo["body"]};color:{th["inksoft"]};'
+            f'font-size:14.5px;font-style:italic;margin-top:5px;">{n["footnote"]}</div>\n'
+            f'      </td></tr>\n'
+            f'      {rule}\n      ')
+    return "".join(rows)
+
+
+def _insight_rows(insights, th, fo):
+    return "".join(
+        f'\n      <tr><td style="padding:12px 0;vertical-align:top;">\n'
+        f'        <table role="presentation" width="100%"><tr>\n'
+        f'          <td width="46" style="font-family:{fo["display"]};color:{th["rust"]};'
+        f'font-size:26px;font-style:italic;vertical-align:top;line-height:1;">{i["roman"]}.</td>\n'
+        f'          <td>\n'
+        f'            <div style="font-family:{fo["display"]};color:{th["ink"]};'
+        f'font-size:18px;font-weight:700;">{i["title"]}</div>\n'
+        f'            <div style="font-family:{fo["body"]};color:{th["ink"]};'
+        f'font-size:16px;line-height:1.6;margin-top:3px;">{i["text"]}</div>\n'
+        f'          </td>\n'
+        f'        </tr></table>\n'
+        f'      </td></tr>\n      '
+        for i in insights)
+
+
+def _plan_items(items, th, fo):
+    return "".join(
+        f'\n        <tr>\n'
+        f'          <td width="26" style="font-family:{fo["display"]};color:{th["rust"]};'
+        f'font-size:17px;vertical-align:top;line-height:1.5;">&mdash;</td>\n'
+        f'          <td style="font-family:{fo["body"]};color:{th["ink"]};font-size:16px;'
+        f'line-height:1.55;padding-bottom:9px;">{it}</td>\n'
+        f'        </tr>\n        '
+        for it in items)
+
+
+def render(ctx, assets_dir=None):
+    """Fill the HTML template from the context built by build_context()."""
+    th, fo = ctx["theme"], ctx["fonts"]
+    g, m, p = ctx["goal"], ctx["masthead"], ctx["plan"]
+    path = Path(assets_dir or ASSETS_DIR) / TEMPLATE_NAME
+    # The template file ends in a newline, as a text file should; the rendered
+    # document should not inherit it as a trailing blank line.
+    body = path.read_text().removesuffix("\n")
+    return Template(body).substitute(
+        paper=th["paper"], panel=th["panel"], ink=th["ink"],
+        inksoft=th["inksoft"], rust=th["rust"], hair=th["hair"],
+        f_script=fo["script"], f_display=fo["display"],
+        f_body=fo["body"], f_figure=fo["figure"],
+        kicker=m["kicker"], date_range=m["date_range"],
+        title=m["title"], subtext=m["subtext"],
+        ledger_row_1="".join(_figure(f, th, fo) for f in ctx["ledger"][:3]),
+        ledger_row_2="".join(_figure(f, th, fo) for f in ctx["ledger"][3:6]),
+        prose_dropcap=g["prose_dropcap"], prose_rest=g["prose_rest"],
+        meters=SPACER.join(_meter(x, th, fo) for x in g["meters"]),
+        trailing=_trailing(g["trailing"], th, fo),
+        city_rows=_city_rows(ctx["cities"], th, fo),
+        note_rows=_note_rows(ctx["notes"], th, fo),
+        insight_rows=_insight_rows(ctx["insights"], th, fo),
+        plan_label=p["label"], plan_headline=p["headline"],
+        plan_items=_plan_items(p["items"], th, fo),
+        colophon1=ctx["colophon"]["line1"], colophon2=ctx["colophon"]["line2"],
+    )
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(
         description="Render digest_data.json into the weekly digest HTML email.")
@@ -181,7 +333,6 @@ def main(argv=None):
     ap.add_argument("--json", action="store_true",
                     help="print {subject, path, bytes} as JSON")
     args = ap.parse_args(argv)
-    ensure_dependency("jinja2", "render the digest email template")
 
     out_dir = Path(args.out).expanduser() if args.out else OUTPUT_DIR
     data_path = out_dir / "digest_data.json"
@@ -197,12 +348,9 @@ def main(argv=None):
               "to regenerate it.", file=sys.stderr)
         return 1
 
-    from jinja2 import Environment, FileSystemLoader
-
     ctx, title = build_context(digest, random.Random(args.seed) if args.seed
                                is not None else random)
-    env = Environment(loader=FileSystemLoader(str(ASSETS_DIR)), autoescape=False)
-    html = env.get_template("digest_email.html.j2").render(**ctx)
+    html = render(ctx)
 
     ensure_dirs(out_dir)
     path = out_dir / "weekly_run_digest.html"

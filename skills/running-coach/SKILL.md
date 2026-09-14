@@ -2,13 +2,8 @@
 name: running-coach
 description: >-
   Plans runs, builds a weekly running digest email, and generates run playlists
-  for Karan from his Strava, Spotify and AccuWeather data. Use when he wants to
-  plan a run or estimate pace and finish time for a distance ("plan my run",
-  "how fast should I run 10k", "how long will 8 km take"); when he wants his
-  weekly run recap ("weekly run digest", "run recap email", "my running week");
-  or when he wants a playlist sized to a run ("make my run playlist", "today's
-  running playlist"). Also use for any question about his Strava runs, run pace,
-  weekly mileage versus goal, or running music, even when the skill is not named.
+  from Strava, Spotify and AccuWeather data. Use for run pacing, weekly mileage
+  recaps, or sizing a playlist to a run.
 ---
 
 # Running Coach
@@ -65,11 +60,10 @@ refresh only what the answer actually depends on. Never hand-edit the JSON.
   notes are the ground truth for what the weather actually did.
 
 The `Server:tool` form above names the server and the tool, not the callable
-name, which differs by how this is installed. The plugin bundles its own
-connectors, so its tools arrive scoped as
-`mcp__plugin_running-coach_Strava__list_activities`; a standalone install uses
+name, which varies by client. This skill bundles no connectors: it uses
 whatever Strava, Spotify and AccuWeather connectors the session already has.
-Match on the server and tool names and use whichever form is offered.
+Match on the server and tool names and use whichever form is offered. If none
+is connected, say so rather than guessing at numbers.
 
 ## Layout
 
@@ -81,13 +75,13 @@ scripts/
   digest/       run_pipeline.py · analyze.py · insights.py · build_email.py
   playlist/     build_playlist.py
 references/     run-planning.md · run-playlist.md · weekly-digest.md
-assets/         digest_email.html.j2
+assets/         digest_email.html
 ```
 
-Everything is standard library except the digest email, which needs `jinja2`.
-The digest scripts find a project `.venv` that has it and re-exec into that
-interpreter automatically, so `python3 scripts/digest/run_pipeline.py` is the
-right command either way. If no interpreter has it, the error says so.
+Python 3.10+ and nothing else — no third-party packages, so `python3` works
+as-is with no virtualenv and no install step. The cache and the rendered
+digest are written outside the skill, under `~/.running-coach/` unless
+`$RUNNING_COACH_DATA` / `$RUNNING_COACH_OUTPUT` say otherwise.
 
 A planning or digest figure that looks inconsistent usually is not: planning
 reports a rolling 7-day window ending now, the digest reports the
@@ -105,4 +99,4 @@ Monday-to-Sunday week. Both label which they mean.
 - Mutable state (the pinned playlist) belongs in the cache under
   `playlist_state`, not in these markdown files.
 - The digest output is a self-contained, ready-to-send HTML file. No email
-  connector is wired up, so hand Karan the file path.
+  connector is wired up, so hand over the file path.

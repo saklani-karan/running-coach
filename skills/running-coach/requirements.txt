@@ -1,6 +1,0 @@
-# running-coach skill — Python 3.10+
-jinja2>=3.1            # the only skill dependency: digest email templating
-
-# Everything else is stdlib (json, datetime, statistics, argparse, pathlib).
-# Live data arrives through the Strava / Spotify / AccuWeather MCP tools, so the
-# skill needs no HTTP client and no API credentials.

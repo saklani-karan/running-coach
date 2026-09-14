@@ -1,11 +1,11 @@
 # Run Playlist — Workflow
 
-Build Karan a playlist sized to the day's run, matched to his taste and recent
-listening, with a build-and-strong-finish arc.
+Build a playlist sized to the day's run, matched to the runner's taste and
+recent listening, with a build-and-strong-finish arc.
 
 ## Workflow
 
-1. **Get the planned distance.** Ask if he hasn't said. Genre is optional and
+1. **Get the planned distance.** Ask if they haven't said. Genre is optional and
    defaults to Hindi indie / pop.
 2. **Refresh what the prompt needs.** `python3 scripts/cache.py status`.
    - `Strava:get_activity_performance` on recent runs →
@@ -28,8 +28,8 @@ listening, with a build-and-strong-finish arc.
        --set "name=Today Run's Playlist"
    ```
 
-6. **Give Karan the link**, and mention he'll need to rename the playlist in
-   Spotify if he wants the exact pinned title.
+6. **Give the runner the link**, and mention they'll need to rename the
+   playlist in Spotify if they want the exact pinned title.
 
 ## Scripts
 
@@ -43,7 +43,7 @@ python3 scripts/playlist/build_playlist.py 5 --band hard
 ```
 
 `--json` returns `{duration, band, seed_artists, pinned_playlist, prompt,
-mcp_steps}`. Use `--minutes` only when Karan gives a duration directly;
+mcp_steps}`. Use `--minutes` only when the runner gives a duration directly;
 otherwise let the pace model size it.
 
 ## Pinned playlist

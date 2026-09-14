@@ -4,7 +4,7 @@ run_pipeline.py — one command to build the whole weekly run digest.
 
     1. validate     the cache holds a usable week (scripts/cache.py)
     2. analyze      weekly totals, rolling goal, cities, insights
-    3. build_email   render assets/digest_email.html.j2
+    3. build_email   render assets/digest_email.html
 
 Nothing here fetches anything. Refresh the cache first with
 `python3 scripts/cache.py status`, which names the MCP call for each gap.
@@ -23,7 +23,6 @@ import analyze
 import build_email
 import cache
 from common.paths import DATA_DIR, OUTPUT_DIR
-from common.runtime import ensure_dependency
 
 
 def main(argv=None):
@@ -43,10 +42,6 @@ def main(argv=None):
     ap.add_argument("--skip-validate", action="store_true",
                     help="go straight to analysis (analysis still fails loudly)")
     args = ap.parse_args(argv)
-
-    # Check this up front: the render is the last step, and discovering a
-    # missing dependency after writing digest_data.json is needlessly confusing.
-    ensure_dependency("jinja2", "render the digest email template")
 
     common = ["--data", args.data] if args.data else []
     out = ["--out", args.out] if args.out else []

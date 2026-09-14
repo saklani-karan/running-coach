@@ -1,0 +1,78 @@
+name: Release
+
+# Every v* tag publishes a ready-to-upload skill archive, so the download link
+# in the README always points at something current. Validation and the smoke
+# test gate the upload: a tag that fails them produces no release rather than
+# a broken one.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)build the archive for"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      # 3.10 is the version the skill claims to support, so building on it is
+      # also how that claim stays honest. No dependencies to install.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Check every script parses
+        run: python -m compileall -q skills/running-coach/scripts package.py
+
+      - name: Validate the skill
+        run: python package.py --validate
+
+      - name: Smoke-test the entry points
+        run: |
+          cd skills/running-coach
+          for script in scripts/cache.py \
+                        scripts/planning/plan_run.py \
+                        scripts/digest/run_pipeline.py \
+                        scripts/playlist/build_playlist.py; do
+            echo "--- $script --help"
+            python "$script" --help > /dev/null
+          done
+
+      - name: Build the archive
+        run: python package.py
+
+      - name: Confirm the archive root
+        # An archive with files loose at the root, or with a second top-level
+        # entry, is rejected on upload and the cause is not obvious from the
+        # error. Read the zip directly rather than parsing `unzip -l` output.
+        run: |
+          python - <<'PY'
+          import zipfile
+          names = zipfile.ZipFile("dist/running-coach.zip").namelist()
+          roots = {n.split("/")[0] for n in names}
+          assert roots == {"running-coach"}, f"expected one root directory, got {sorted(roots)}"
+          assert "running-coach/SKILL.md" in names, "SKILL.md is not at the archive root"
+          print("\n".join(sorted(names)))
+          PY
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" dist/running-coach.zip --clobber
+          else
+            gh release create "$TAG" dist/running-coach.zip \
+              --title "running-coach $TAG" --generate-notes
+          fi

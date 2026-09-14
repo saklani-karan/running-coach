@@ -42,14 +42,35 @@ running-coach/
 │   ├── scripts/                   cache.py + common/ + the 3 capabilities
 │   └── assets/                    digest_email.html
 ├── evals/                         three evaluation scenarios
+├── .github/workflows/release.yml  builds and attaches the archive on a v* tag
 └── package.py                     validates and zips the skill, into dist/
 ```
 
 ## Installing
 
 The skill follows the Agent Skills spec — `SKILL.md` with `name`/`description`
-frontmatter, the directory named to match — so anything that scans a skills
-root picks it up. Symlink or copy `skills/running-coach` into that root:
+frontmatter, the directory named to match — so every host below takes the same
+skill, just packaged differently.
+
+### Upload the archive (Cowork, claude.ai)
+
+Download `running-coach.zip` from the
+[latest release](https://github.com/saklani-karan/running-coach/releases/latest),
+then **Customize → Skills → + → Create skill → Upload a skill**, and toggle it
+on. Building it yourself is one command:
+
+```bash
+python3 package.py
+```
+
+Either way the archive holds a single `running-coach/` directory at its root —
+an archive of loose files is rejected on upload. Hosts that expect the
+`.skill` extension take the same archive renamed.
+
+### Point an agent at the directory (Claude Code, OpenClaw, OpenCode)
+
+Anything that scans a skills root picks the directory up in place, no
+packaging step. Symlink or copy `skills/running-coach` into that root:
 
 | Agent | Root |
 | --- | --- |
@@ -61,23 +82,23 @@ root picks it up. Symlink or copy `skills/running-coach` into that root:
 ln -s "$PWD/skills/running-coach" ~/.claude/skills/running-coach
 ```
 
-For claude.ai, build the archive and upload it under Settings → Capabilities →
-Skills:
+### What it needs from the host
 
-```bash
-python3 package.py
-```
+**Code execution**, since every capability is a Python script. On claude.ai
+that is Settings → Capabilities → Code execution and file creation; Team and
+Enterprise plans need it enabled at the organisation level first.
 
-That writes `dist/running-coach.zip`, holding a single `running-coach/`
-directory at its root — an archive of loose files is rejected. Clients that
-expect the `.skill` extension take the same archive renamed.
+**Your own connectors.** The skill bundles none and holds no credentials — it
+asks the agent to fetch through whatever Strava, Spotify and AccuWeather
+connectors the session already has. Strava's is its official connector and
+needs a Strava subscription. Without one the skill still loads and every
+script runs, but `cache.py status` reports everything missing and there is no
+data to work from, which looks like a broken skill and is not.
 
-Two things to know about the hosted sandbox on claude.ai. There are no bundled
-connectors, so the session needs its own Strava, Spotify and AccuWeather
-connectors for the agent to refresh the cache. And its filesystem is
-per-session, so the cache starts empty each time and is rebuilt from MCP rather
-than reused — everything still works, it just re-fetches. Locally the cache
-persists and `cache.py status` only asks for what has gone stale.
+On a hosted sandbox the filesystem is per-session, so the cache starts empty
+each time and is rebuilt from MCP rather than reused. Everything still works,
+it just re-fetches. Locally the cache persists and `cache.py status` only asks
+for what has gone stale.
 
 ## Running it
 
@@ -115,10 +136,53 @@ Python 3.10+ and nothing else. No third-party packages, no virtualenv, no
 install step — `python3` works as-is, including inside a hosted sandbox where
 installing packages is not possible.
 
-## Packaging
+## Packaging and releases
 
 `python3 package.py --validate` checks the frontmatter against the Agent Skills
 spec: the six allowed keys, a kebab-case `name` matching the directory, and a
 `description` within limits. It also warns past 200 characters, which is
 roughly where claude.ai's picker truncates. `python3 package.py` runs the same
 checks and then writes the archive.
+
+Releases are automated. Pushing a `v*` tag runs
+[`.github/workflows/release.yml`](.github/workflows/release.yml), which builds
+on Python 3.10 — the version the skill claims to support, so the claim stays
+honest — then compiles every script, validates the frontmatter, smoke-tests
+each entry point, and confirms `running-coach/SKILL.md` sits at the archive
+root before publishing. Any of those failing means no release rather than a
+broken one, so the download link above is always something that works:
+
+```bash
+git tag -a v1.1.0 -m "running-coach v1.1.0" && git push origin v1.1.0
+```
+
+Re-running the workflow by hand against an existing tag replaces the attached
+archive, so a release can be rebuilt without moving the tag. `dist/` is
+gitignored: the archive is a release asset, never a committed file.
+
+## Sharing this skill
+
+Point people at the
+[latest release](https://github.com/saklani-karan/running-coach/releases/latest)
+rather than the repo — they need the zip, not the source. Worth saying up
+front that it needs code execution and their own Strava connector, since a
+missing connector is the one thing that makes a correctly installed skill look
+broken:
+
+> I built a running-coach skill for Claude — it plans runs off your Strava
+> history (pace, projected finish, effort band from your trailing load), builds
+> a weekly digest email, and generates Spotify playlists sized to the run.
+>
+> Install: grab `running-coach.zip` from
+> https://github.com/saklani-karan/running-coach/releases/latest then
+> Customize → Skills → + → Create skill → Upload a skill, and toggle it on.
+>
+> Two things it needs:
+> - Code execution enabled (Settings → Capabilities). It's all Python scripts.
+> - Your own Strava connector, plus Spotify and AccuWeather if you want
+>   playlists and weather. The skill has no credentials of its own — it asks
+>   Claude to fetch through your connectors. Strava's is the official one and
+>   needs a subscription.
+>
+> Then just ask normally: "plan my 10k for tomorrow morning", "build my weekly
+> run digest", "make me a playlist for an 8k". No need to name the skill.

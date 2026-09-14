@@ -1,7 +1,7 @@
 # running-coach
 
-A portable **Agent Skill** that turns Strava, Spotify and AccuWeather data into
-three things:
+A portable **Agent Skill** that turns Strava, Spotify, AccuWeather and Google Calendar data into
+four things:
 
 1. **Plan runs** — recent Strava efforts to an estimated pace, a projected
    finish (Riegel), and an effort band from the trailing load.
@@ -12,6 +12,11 @@ three things:
    `scripts/digest/run_pipeline.py`.
 3. **Run playlist** — a playlist sized to the projected finish time, matched to
    taste and recent listening. `scripts/playlist/build_playlist.py`.
+4. **Plan the week** — the weekly goal (stored, since Strava can't hold one)
+   split into a run mix in 5 km milestones, laid out across the days with pace
+   windows, and emitted as Google Calendar blocks. The script computes the
+   numbers and hands the agent a contract; the agent writes each block's words,
+   so no two runs read the same. `scripts/planning/plan_week.py`.
 
 ## How it's wired
 
@@ -21,7 +26,7 @@ transform over that cache — no HTTP client, no API keys, no access tokens.
 
 ```
 agent --(Strava: / Spotify: / AccuWeather: MCP)--> cache.py put --> the cache
-the cache --> plan_run.py / run_pipeline.py / build_playlist.py --> output
+the cache --> plan_run.py / plan_week.py / run_pipeline.py / build_playlist.py --> output
 ```
 
 That split is what makes the skill portable: it never needs credentials of its
@@ -37,11 +42,11 @@ generated output, nothing to clean.
 ```
 running-coach/
 ├── skills/running-coach/          THE SKILL — portable, spec-compliant
-│   ├── SKILL.md                   entry point; routes to the 3 capabilities
+│   ├── SKILL.md                   entry point; routes to the 4 capabilities
 │   ├── references/                workflow specs, read on demand
-│   ├── scripts/                   cache.py + common/ + the 3 capabilities
-│   └── assets/                    digest_email.html
-├── evals/                         three evaluation scenarios
+│   ├── scripts/                   cache.py + common/ + the 4 capabilities
+│   └── assets/                    digest_email.html · calendar_event.tmpl
+├── evals/                         four evaluation scenarios
 ├── .github/workflows/release.yml  builds and attaches the archive on a v* tag
 └── package.py                     validates and zips the skill, into dist/
 ```
@@ -110,6 +115,7 @@ python3 scripts/cache.py status                    # what's cached, how stale
 python3 scripts/planning/plan_run.py 8             # plan an 8 km run
 python3 scripts/digest/run_pipeline.py --plan-km 8 # digest, leading with that run
 python3 scripts/playlist/build_playlist.py 8       # build the Spotify prompt
+python3 scripts/planning/plan_week.py propose       # plan the whole week
 ```
 
 Every script takes `--help`, and most take `--json`. `cache.py status` names

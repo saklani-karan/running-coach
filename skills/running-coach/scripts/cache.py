@@ -98,13 +98,36 @@ def _summary_playlist(v):
     return f"{v.get('name') or 'unnamed'} · {v.get('playlist_id') or 'no id yet'}"
 
 
+def _summary_goal(v):
+    if v.get("type") == "race" and v.get("race_name"):
+        head = f"race: {v['race_name']}" + (f" ({v['race_date']})" if v.get("race_date") else "")
+    else:
+        head = "weekly mileage"
+    bits = [head]
+    if v.get("weekly_km"):
+        bits.append(f"{v['weekly_km']:g} km/wk")
+    if v.get("runs_per_week"):
+        bits.append(f"{v['runs_per_week']} runs/wk")
+    if v.get("focus"):
+        bits.append(f"focus={v['focus']}")
+    return " · ".join(bits)
+
+
+def _summary_weather_forecast(v):
+    by = (v or {}).get("by_date") or {}
+    loc = (v or {}).get("location") or "location"
+    return f"{len(by)} day forecast · {loc}"
+
+
 # ---------------------------------------------------------------- key registry
 KEYS = {k.name: k for k in [
     CacheKey(
         "activities_week", 6,
         "Strava:list_activities for the current Monday-to-Sunday week",
         lambda p, aid: nz.normalize_activities(p, want_polyline=True),
-        _summary_activities, needed_by=("digest",),
+        _summary_activities, needed_by=("digest", "planning"),
+        note="the week in progress: pace samples, and the run count that "
+             "holds a ramp back",
     ),
     CacheKey(
         "activities_history", HOURS_PER_WEEK,
@@ -158,6 +181,22 @@ KEYS = {k.name: k for k in [
         lambda p, aid: nz.normalize_playlist_state(p), _summary_playlist,
         local=True,
         note="the pinned run playlist; the playlist flow rewrites it each run",
+    ),
+    CacheKey(
+        "goal_state", None,
+        "python3 scripts/cache.py put goal_state --set weekly_km=<km> "
+        "--set runs_per_week=<n> --set focus=build",
+        lambda p, aid: nz.normalize_goal_state(p), _summary_goal,
+        local=True,
+        note="the weekly training goal; Strava exposes no writable goal "
+             "field, so a stated goal lives here for week-planning",
+    ),
+    CacheKey(
+        "weather_forecast", 12,
+        "AccuWeather:widgets-search-claude for the run city, then "
+        "AccuWeather:widgets-daily-claude for its location key",
+        lambda p, aid: nz.normalize_weather_forecast(p), _summary_weather_forecast,
+        note="per-day forecast for the week plan's prep line; optional",
     ),
 ]}
 

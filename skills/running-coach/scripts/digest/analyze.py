@@ -25,7 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # scripts/
 import cache
 import insights as insight_lib
-from common.pace import fmt_hms, fmt_pace, speed_to_pace
+from common.pace import fmt_hms, fmt_pace, speed_to_pace, to_milestone
 from common.paths import DATA_DIR, OUTPUT_DIR, ensure_dirs
 from common.weeks import parse_dt, week_key
 
@@ -87,7 +87,9 @@ def resolve_focus(profile):
 
 def build_next_week_plan(goal_dist_km, goal_runs, baseline_km, planned=None,
                          week_distance_km=0, week_open=False):
-    per_run = goal_dist_km / goal_runs if goal_runs else goal_dist_km
+    # Rounded to the same milestone the week planner books runs on, so the two
+    # never suggest different lengths for the same week.
+    per_run = to_milestone(goal_dist_km / goal_runs if goal_runs else goal_dist_km)
     items = []
     if planned:
         rec = planned["recommended"]
@@ -123,8 +125,9 @@ def build_next_week_plan(goal_dist_km, goal_runs, baseline_km, planned=None,
         "items": items + [
             f"{lead} back to {goal_runs} sessions — consistency is the goal you "
             "actually missed, not speed.",
-            f"Keep {per_run:.0f} km as the default run length; stack one longer "
-            f"{per_run * 2:.0f} km effort mid-week.",
+            f"Keep {per_run:g} km as the default run length; make one of them a "
+            f"longer {per_run * 2:g} km effort — the week planner puts it on "
+            f"Sunday, and will lay the rest out around it.",
             "Hold easy pace. Save the personal-best gears for one strides "
             "session, not the daily grind.",
             "Front-load the week — bank runs early so a bad-weather Thursday "

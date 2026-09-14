@@ -1,0 +1,77 @@
+<title>Run Calendar Template v3</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --ink:#1f2328; --muted:#6b7280;
+    --line:#e5e7eb; --accent:#2563eb; --good:#059669;
+    --tempo:#f59e0b; --easy:#22c55e; --steady:#3b82f6; --long:#8b5cf6;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1115; --card:#181b20; --ink:#e6e8eb; --muted:#9aa1ab;
+      --line:#2a2f37; --accent:#6ea8fe; --good:#34d399;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1115; --card:#181b20; --ink:#e6e8eb; --muted:#9aa1ab;
+    --line:#2a2f37; --accent:#6ea8fe; --good:#34d399;
+  }
+  body{background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;}
+  .wrap{max-width:760px;margin:0 auto;padding-block:28px;padding-inline:16px;}
+  h1{font-size:22px;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 20px;}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:26px 0 12px;font-weight:600;}
+  .callout{background:color-mix(in srgb,var(--good) 10%,transparent);
+    border:1px solid color-mix(in srgb,var(--good) 30%,transparent);
+    border-radius:10px;padding:12px 16px;font-size:13.5px;}
+  .cards{display:flex;flex-direction:column;gap:16px;}
+  .ev{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .ev-head{display:flex;gap:12px;padding:14px 16px 10px;border-bottom:1px solid var(--line);}
+  .bar{width:6px;border-radius:6px;flex:0 0 6px;}
+  .ev-title{font-size:16px;font-weight:600;margin:0 0 3px;}
+  .ev-meta{font-size:13px;color:var(--muted);}
+  .desc{padding:14px 16px 16px;font-size:14px;}
+  .desc small{color:var(--muted);}
+</style>
+
+<div class="wrap">
+  <h1>Run calendar — description v3 (no emojis)</h1>
+  <p class="sub">Emojis removed from titles and descriptions. Section markers are now bold text labels; the checklist keeps the plain ☐ box. Everything else (progress, weather, prep, checklist, voice) is unchanged.</p>
+
+  <div class="callout">
+    <b>Changes in this pass:</b> no emojis anywhere · prep lines now read <b>Weather</b> / <b>Warm-up</b> / <b>Fuel</b> as bold labels · the “cap / wet roads” checklist item now shows <b>only when rain is likely at run time</b> — so it appears on Sunday’s evening long run but not the drier weekday mornings.
+  </div>
+
+  <h2>Rendered preview</h2>
+  <div class="cards">
+
+    <div class="ev">
+      <div class="ev-head"><div class="bar" style="background:var(--tempo)"></div>
+        <div><div class="ev-title">Tempo run · 5 km (tempo)</div>
+        <div class="ev-meta">Tue 15 Sep · 07:00–07:40 · HSR Layout, Bengaluru</div></div></div>
+      <div class="desc"><b>Tempo run — 5 km</b><br>Pace 5:10–5:30/km &nbsp;·&nbsp; est. 25:48–27:28 &nbsp;·&nbsp; tempo effort<br>~1 km easy, 3 km at 5:10–5:30/km, ~1 km easy cool-down<br>Run 1 of 4 this week · 5 of 25 km<br><br><b>Why this run</b><br>Raises your lactate threshold — the pace you can hold before your legs flood. Train it and race pace starts to feel easy.<br><br><b>Before you go</b><br><b>Weather</b> — ~21°C at the start; storms likely later (56%), but the morning should stay drier. Wear light, breathable kit — it'll be humid.<br><b>Warm-up</b> — 5 min easy jog, then leg swings, high knees and 3–4 short strides<br><b>Fuel</b> — light carb snack ~45 min before; sip water, don't overdrink<br><br><b>Checklist</b><br>☐ Shoes + socks on<br>☐ Watch / GPS started<br>☐ Sipped water<br>☐ 5-min warm-up done<br>☐ Playlist queued<br><br><b>Pep talk</b><br><i>No one has ever finished a run and thought, 'I wish I'd stayed in bed.'</i><br><br>Lock in, suffer politely, and remember it was your idea.<br><br><small>Part of your 25 km · 4-run week — auto-planned by your running coach</small></div>
+    </div>
+
+    <div class="ev">
+      <div class="ev-head"><div class="bar" style="background:var(--easy)"></div>
+        <div><div class="ev-title">Easy run · 5 km (easy)</div>
+        <div class="ev-meta">Wed 16 Sep · 07:00–07:40 · HSR Layout, Bengaluru</div></div></div>
+      <div class="desc"><b>Easy run — 5 km</b><br>Pace 5:42–6:02/km &nbsp;·&nbsp; est. 28:28–30:08 &nbsp;·&nbsp; easy effort<br>Fully easy — hold it back, this is recovery<br>Run 2 of 4 this week · 10 of 25 km<br><br><b>Why this run</b><br>Recovery and aerobic base. Easy miles are where the hard work is absorbed; running these too fast is the classic way to stall.<br><br><b>Before you go</b><br><b>Weather</b> — ~21°C at the start; storms likely later (55%), but the morning should stay drier. Wear light, breathable kit — it'll be humid.<br><b>Warm-up</b> — 3–5 min easy walk/jog and a few leg swings to loosen up<br><b>Fuel</b> — a glass of water beforehand is plenty — no fuelling needed<br><br><b>Checklist</b><br>☐ Shoes + socks on<br>☐ Watch / GPS started<br>☐ Sipped water<br>☐ 5-min warm-up done<br>☐ Playlist queued<br><br><b>Pep talk</b><br><i>Discipline is just remembering what you want. You want this.</i><br><br>Go so easy your GPS thinks it broke. That's the whole point.<br><br><small>Part of your 25 km · 4-run week — auto-planned by your running coach</small></div>
+    </div>
+
+    <div class="ev">
+      <div class="ev-head"><div class="bar" style="background:var(--steady)"></div>
+        <div><div class="ev-title">Steady run · 5 km (steady)</div>
+        <div class="ev-meta">Fri 18 Sep · 07:00–07:40 · HSR Layout, Bengaluru</div></div></div>
+      <div class="desc"><b>Steady run — 5 km</b><br>Pace 5:34–5:54/km &nbsp;·&nbsp; est. 27:48–29:28 &nbsp;·&nbsp; steady effort<br>Comfortable and controlled, a touch firmer than easy<br>Run 3 of 4 this week · 15 of 25 km<br><br><b>Why this run</b><br>Aerobic development at a slightly firmer effort — the honest middle that quietly lifts your everyday cruising pace.<br><br><b>Before you go</b><br><b>Weather</b> — ~22°C at the start; storms likely later (55%), but the morning should stay drier. Wear light, breathable kit — it'll be humid.<br><b>Warm-up</b> — 3–5 min easy walk/jog and a few leg swings to loosen up<br><b>Fuel</b> — a glass of water beforehand is plenty — no fuelling needed<br><br><b>Checklist</b><br>☐ Shoes + socks on<br>☐ Watch / GPS started<br>☐ Sipped water<br>☐ 5-min warm-up done<br>☐ Playlist queued<br><br><b>Pep talk</b><br><i>Bad runs still count. Slow runs still count. Only the skipped one doesn't.</i><br><br>Find the rhythm and sit in it like it's your favourite chair.<br><br><small>Part of your 25 km · 4-run week — auto-planned by your running coach</small></div>
+    </div>
+
+    <div class="ev">
+      <div class="ev-head"><div class="bar" style="background:var(--long)"></div>
+        <div><div class="ev-title">Long run · 10 km (easy)</div>
+        <div class="ev-meta">Sun 20 Sep · 18:00–19:15 · HSR Layout, Bengaluru</div></div></div>
+      <div class="desc"><b>Long run — 10 km</b><br>Pace 6:02–6:22/km &nbsp;·&nbsp; est. 1:00:17–1:03:37 &nbsp;·&nbsp; easy effort<br>Steady and conversational throughout — time on feet, not pace<br>Run 4 of 4 this week · 25 of 25 km<br><br><b>Why this run</b><br>The single most important run of the week. It builds the aerobic engine and teaches your body to go the distance — the base everything else stacks on.<br><br><b>Before you go</b><br><b>Weather</b> — ~21°C at the start, a shower and t-storm early; 71% chance of a storm at run time — check the radar, roads may be wet. Wear light, breathable kit — it'll be humid.<br><b>Warm-up</b> — 3–5 min easy walk/jog and a few leg swings to loosen up<br><b>Fuel</b> — carry water; a gel or banana ~40 min in, and hydrate well the night before<br><br><b>Checklist</b><br>☐ Shoes + socks on<br>☐ Watch / GPS started<br>☐ Sipped water<br>☐ Water + fuel packed<br>☐ 5-min warm-up done<br>☐ Playlist queued<br>☐ Cap on, mind the wet roads<br><br><b>Pep talk</b><br><i>The couch will still be there when you're done. It's very loyal like that.</i><br><br>Less a run, more a small expedition. Snacks optional, ego not required.<br><br><small>Part of your 25 km · 4-run week — auto-planned by your running coach</small></div>
+    </div>
+
+  </div>
+</div>

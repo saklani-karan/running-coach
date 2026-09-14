@@ -50,7 +50,13 @@ python3 scripts/digest/run_pipeline.py --plan-km 8 --start-in 11   # tonight's r
 python3 scripts/planning/plan_run.py 8 --start-in 11 --json | \
     python3 scripts/digest/run_pipeline.py --plan -               # same result
 python3 scripts/digest/run_pipeline.py --seed 3 --out /tmp/digest
+python3 scripts/digest/run_pipeline.py --skip-validate               # skip the cache shape-check
 ```
+
+Flags: `--plan-km KM` / `--plan FILE` (lead with a planned run) · `--start-in
+HOURS` (carry the plan's start time) · `--seed N` (fix the masthead title) ·
+`--out DIR` (output directory) · `--data DIR` (cache directory) ·
+`--skip-validate` (go straight to analysis; analysis still fails loudly).
 
 Carry `--start-in` through whenever planning used it: the digest re-projects
 the run, and without the same start time it would band the run as if it were

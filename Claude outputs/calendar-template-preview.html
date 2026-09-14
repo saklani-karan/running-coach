@@ -1,0 +1,110 @@
+<title>Run Calendar Template</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --ink:#1f2328; --muted:#6b7280;
+    --line:#e5e7eb; --accent:#2563eb; --code:#f3f4f6;
+    --tempo:#f59e0b; --easy:#22c55e; --steady:#3b82f6; --long:#8b5cf6;
+  }
+  :root:not([data-theme="light"]){}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1115; --card:#181b20; --ink:#e6e8eb; --muted:#9aa1ab;
+      --line:#2a2f37; --accent:#6ea8fe; --code:#1f242c;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1115; --card:#181b20; --ink:#e6e8eb; --muted:#9aa1ab;
+    --line:#2a2f37; --accent:#6ea8fe; --code:#1f242c;
+  }
+  body{background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;}
+  .wrap{max-width:760px;margin:0 auto;padding-block:28px;padding-inline:16px;}
+  h1{font-size:22px;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 24px;}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+    margin:28px 0 12px;font-weight:600;}
+  /* template skeleton */
+  .skel{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;font-size:14px;}
+  .skel ol{margin:0;padding-left:20px;}
+  .skel li{margin:7px 0;}
+  .tag{display:inline-block;font-size:11px;font-weight:700;color:var(--accent);
+    background:color-mix(in srgb,var(--accent) 12%,transparent);
+    border-radius:5px;padding:1px 6px;margin-right:8px;vertical-align:middle;}
+  code{background:var(--code);border-radius:4px;padding:1px 5px;font-size:12.5px;
+    font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;}
+  .ph{color:var(--long);font-weight:600;}
+  /* gcal-ish event cards */
+  .cards{display:flex;flex-direction:column;gap:16px;}
+  .ev{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .ev-head{display:flex;gap:12px;padding:14px 16px 10px;border-bottom:1px solid var(--line);}
+  .bar{width:6px;border-radius:6px;flex:0 0 6px;}
+  .ev-title{font-size:16px;font-weight:600;margin:0 0 3px;}
+  .ev-meta{font-size:13px;color:var(--muted);}
+  .desc{padding:14px 16px 16px;font-size:14px;color:var(--ink);}
+  .desc small{color:var(--muted);}
+  .desc i{color:var(--ink);}
+  .note{font-size:12.5px;color:var(--muted);margin-top:6px;}
+  .callout{background:color-mix(in srgb,var(--accent) 8%,transparent);
+    border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);
+    border-radius:10px;padding:12px 14px;font-size:13.5px;margin-top:8px;}
+</style>
+
+<div class="wrap">
+  <h1>Run calendar — description template</h1>
+  <p class="sub">What every event's description is built from today, and how it renders in Google Calendar. This is the thing we're about to improve.</p>
+
+  <h2>The template (per run)</h2>
+  <div class="skel">
+    <ol>
+      <li><span class="tag">TITLE</span><b>&lt;Run type&gt; — &lt;distance&gt; km</b></li>
+      <li><span class="tag">STATS</span>🎯 Pace window <span class="ph">&lt;window&gt;</span> · est. <span class="ph">&lt;time range&gt;</span> · <span class="ph">&lt;band&gt;</span> effort</li>
+      <li><span class="tag">STRUCTURE</span>🧭 <span class="ph">&lt;how to run it&gt;</span></li>
+      <li><span class="tag">WHY</span><b>Why this run</b> → <span class="ph">&lt;purpose&gt;</span></li>
+      <li><span class="tag">PEP</span><b>Pep talk</b> → <i><span class="ph">&lt;rotating motivation&gt;</span></i></li>
+      <li><span class="tag">QUIP</span><span class="ph">&lt;rotating joke, by run type&gt;</span></li>
+      <li><span class="tag">FOOTER</span><small>Part of your <span class="ph">&lt;km&gt;</span> km · <span class="ph">&lt;N&gt;</span>-run week — auto-planned by your running coach 🏃</small></li>
+    </ol>
+    <p class="note">Markup used: <code>&lt;b&gt;</code>, <code>&lt;i&gt;</code>, <code>&lt;small&gt;</code>, <code>&lt;br&gt;</code>. Google Calendar renders these; it shows <code>&lt;small&gt;</code> at normal size, so the footer isn't really smaller in the app.</p>
+  </div>
+
+  <h2>Rendered preview — the 4 events now on your calendar</h2>
+  <div class="cards">
+
+    <div class="ev">
+      <div class="ev-head"><div class="bar" style="background:var(--tempo)"></div>
+        <div><div class="ev-title">🟠 Tempo run · 5 km (tempo)</div>
+        <div class="ev-meta">Tue 15 Sep · 07:00–07:40 · HSR Layout, Bengaluru</div></div></div>
+      <div class="desc"><b>Tempo run — 5 km</b><br>🎯 Pace window 5:10–5:30/km &nbsp;·&nbsp; est. 25:48–27:28 &nbsp;·&nbsp; tempo effort<br>🧭 ~1 km easy, 3 km at 5:10–5:30/km, ~1 km easy cool-down<br><br><b>Why this run</b><br>Raises your lactate threshold — the pace you can hold before your legs flood. Train it and race pace starts to feel easy.<br><br><b>Pep talk</b><br><i>No one has ever finished a run and thought, 'I wish I'd stayed in bed.'</i><br><br>Lock in, suffer politely, and remember it was your idea.<br><br><small>Part of your 25 km · 4-run week — auto-planned by your running coach 🏃</small></div>
+    </div>
+
+    <div class="ev">
+      <div class="ev-head"><div class="bar" style="background:var(--easy)"></div>
+        <div><div class="ev-title">🟢 Easy run · 5 km (easy)</div>
+        <div class="ev-meta">Wed 16 Sep · 07:00–07:40 · HSR Layout, Bengaluru</div></div></div>
+      <div class="desc"><b>Easy run — 5 km</b><br>🎯 Pace window 5:42–6:02/km &nbsp;·&nbsp; est. 28:28–30:08 &nbsp;·&nbsp; easy effort<br>🧭 Fully easy — hold it back, this is recovery<br><br><b>Why this run</b><br>Recovery and aerobic base. Easy miles are where the hard work is absorbed; running these too fast is the classic way to stall.<br><br><b>Pep talk</b><br><i>Discipline is just remembering what you want. You want this.</i><br><br>Go so easy your GPS thinks it broke. That's the whole point.<br><br><small>Part of your 25 km · 4-run week — auto-planned by your running coach 🏃</small></div>
+    </div>
+
+    <div class="ev">
+      <div class="ev-head"><div class="bar" style="background:var(--steady)"></div>
+        <div><div class="ev-title">🔵 Steady run · 5 km (steady)</div>
+        <div class="ev-meta">Fri 18 Sep · 07:00–07:40 · HSR Layout, Bengaluru</div></div></div>
+      <div class="desc"><b>Steady run — 5 km</b><br>🎯 Pace window 5:34–5:54/km &nbsp;·&nbsp; est. 27:48–29:28 &nbsp;·&nbsp; steady effort<br>🧭 Comfortable and controlled, a touch firmer than easy<br><br><b>Why this run</b><br>Aerobic development at a slightly firmer effort — the honest middle that quietly lifts your everyday cruising pace.<br><br><b>Pep talk</b><br><i>Bad runs still count. Slow runs still count. Only the skipped one doesn't.</i><br><br>Find the rhythm and sit in it like it's your favourite chair.<br><br><small>Part of your 25 km · 4-run week — auto-planned by your running coach 🏃</small></div>
+    </div>
+
+    <div class="ev">
+      <div class="ev-head"><div class="bar" style="background:var(--long)"></div>
+        <div><div class="ev-title">🟣 Long run · 10 km (easy)</div>
+        <div class="ev-meta">Sun 20 Sep · 18:00–19:15 · HSR Layout, Bengaluru</div></div></div>
+      <div class="desc"><b>Long run — 10 km</b><br>🎯 Pace window 6:02–6:22/km &nbsp;·&nbsp; est. 1:00:17–1:03:37 &nbsp;·&nbsp; easy effort<br>🧭 Steady and conversational throughout — time on feet, not pace<br><br><b>Why this run</b><br>The single most important run of the week. It builds the aerobic engine and teaches your body to go the distance — the base everything else stacks on.<br><br><b>Pep talk</b><br><i>The couch will still be there when you're done. It's very loyal like that.</i><br><br>Less a run, more a small expedition. Snacks optional, ego not required.<br><br><small>Part of your 25 km · 4-run week — auto-planned by your running coach 🏃</small></div>
+    </div>
+
+  </div>
+
+  <h2>Where it could go further</h2>
+  <div class="callout">
+    Ideas on the table — <b>practical prep</b> (warm-up drills, hydration/fuel cue, gear/weather note), <b>live links</b> (this run's Spotify playlist, the Strava segment, the weather), a <b>tick-box checklist</b>, a <b>weekly-progress line</b> (“run 2 of 4 · 10 of 25 km”), or dialing the <b>tone</b> of the jokes up or down. We'll pick what earns its place and I'll build it into the generator.
+  </div>
+</div>

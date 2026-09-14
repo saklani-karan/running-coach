@@ -1,0 +1,14 @@
+{
+  "skills": ["running-coach"],
+  "query": "Plan my running week and put the runs on my Google Calendar.",
+  "expected_behavior": [
+    "Triggers the running-coach skill and routes to the week-planning capability (plan_week.py), not the single-run planner, the digest or the playlist",
+    "Reads references/week-planning.md and does not read the other capability references",
+    "Checks Strava for a goal (get_training_plan / get_athlete_profile) and, finding no writable weekly-goal field, asks the runner for a target and stores it via scripts/cache.py put goal_state rather than claiming it wrote the goal back to Strava",
+    "Runs scripts/cache.py status and refreshes performance / activities_history through the Strava MCP before proposing paces",
+    "Runs scripts/planning/plan_week.py propose and confirms the run count and mix with the runner before drafting",
+    "Runs plan_week.py draft and confirms days and times before generating events",
+    "Runs plan_week.py events --json and creates one Google_Calendar:create_event per run, only after confirmation, rather than reimplementing the payloads by hand",
+    "Never asks for or uses a Strava access token"
+  ]
+}

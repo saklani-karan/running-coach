@@ -29,6 +29,12 @@ EFFORT_METRES = {
 
 STREAM_KEYS = ("distance", "altitude", "velocity_smooth", "time")
 
+# Everything a stated training goal may carry. Anything else is a typo.
+GOAL_STATE_FIELDS = frozenset({
+    "type", "weekly_km", "runs_per_week", "focus",
+    "race_name", "race_date", "notes", "source",
+})
+
 
 class NormalizeError(ValueError):
     """Raised with an actionable message when a payload can't be normalised."""
@@ -208,9 +214,14 @@ def normalize_athlete_profile(payload):
     p = unwrap(payload, "athlete", "profile")
     if not isinstance(p, dict):
         raise NormalizeError(f"expected an object, got {type(p).__name__}.")
+    # current_focus is a string in the REST payload but an object
+    # ({"focus_type": "Build"}) in the current MCP response; accept either.
+    focus = p.get("current_focus") or p.get("focus") or ""
+    if isinstance(focus, dict):
+        focus = focus.get("focus_type") or focus.get("type") or ""
     return {
-        "firstname": p.get("firstname", ""),
-        "current_focus": p.get("current_focus") or p.get("focus") or "",
+        "firstname": p.get("firstname") or p.get("first_name", ""),
+        "current_focus": focus,
         "weight": p.get("weight"),
         "raw": p,
     }
@@ -273,3 +284,93 @@ def normalize_playlist_state(payload):
         "name": p.get("name", "Today Run's Playlist"),
         "prompt": p.get("prompt", ""),
     }
+
+
+def normalize_goal_state(payload):
+    """A weekly training goal the runner stated -> the shape plan_week reads.
+
+    Strava has no writable goal field, so this is local state (like the pinned
+    playlist): the agent writes it via `cache.py put goal_state --set ...` once
+    the runner confirms a target. Accepts weekly-mileage or race-oriented goals.
+    """
+    p = unwrap(payload, "goal")
+    if not isinstance(p, dict):
+        raise NormalizeError(f"expected an object, got {type(p).__name__}.")
+
+    # A goal is typed by hand through `--set key=value`, so a typo would
+    # otherwise be stored, ignored, and leave the runner wondering why the plan
+    # never changed. Refuse the write instead.
+    unknown = sorted(set(p) - GOAL_STATE_FIELDS)
+    if unknown:
+        raise NormalizeError(
+            f"unknown goal field(s) {', '.join(unknown)}. Accepted: "
+            f"{', '.join(sorted(GOAL_STATE_FIELDS))}.")
+
+    def _num(x):
+        try:
+            return float(x)
+        except (TypeError, ValueError):
+            return None
+
+    for field in ("weekly_km", "runs_per_week"):
+        if p.get(field) not in (None, "") and _num(p[field]) is None:
+            raise NormalizeError(f"{field} must be a number, got {p[field]!r}.")
+
+    km, runs = _num(p.get("weekly_km")), p.get("runs_per_week")
+    if km is not None and km <= 0:
+        raise NormalizeError(f"weekly_km must be positive, got {km:g}.")
+    if runs not in (None, "") and not 1 <= int(float(runs)) <= 7:
+        raise NormalizeError(f"runs_per_week must be 1-7, got {runs}.")
+
+    goal_type = p.get("type") or ("race" if p.get("race_name") else "weekly_mileage")
+    return {
+        "type": goal_type,
+        "weekly_km": km,
+        "runs_per_week": int(float(runs)) if runs not in (None, "") else None,
+        "focus": (p.get("focus") or "").strip().lower(),
+        "race_name": p.get("race_name") or "",
+        "race_date": p.get("race_date") or "",
+        "notes": p.get("notes") or "",
+        "source": p.get("source") or "user",
+    }
+
+
+def normalize_weather_forecast(payload):
+    """An AccuWeather daily-forecast response -> {by_date: {YYYY-MM-DD: {...}}}.
+
+    Keeps only what a run brief needs — the day (afternoon) and night parts'
+    temperature, rain probability and a short phrase — keyed by date so
+    plan_week can look up each run's day. Optional for week planning; when
+    absent the prep line simply omits the weather bit.
+    """
+    root = payload if isinstance(payload, dict) else {}
+    days = unwrap(payload, "weather_forecast", "dailyForecast")
+    if isinstance(days, dict):
+        days = days.get("dailyForecast") or days.get("by_date")
+    if isinstance(days, dict):  # already normalised {by_date: ...}
+        return {"location": root.get("location", ""), "by_date": days}
+    if not isinstance(days, list):
+        raise NormalizeError(
+            "expected an AccuWeather dailyForecast list. Pass the "
+            "AccuWeather:widgets-daily-claude response through unchanged."
+        )
+
+    def _part(x):
+        x = x or {}
+        precip = x.get("rainProbabilityValue")
+        if precip is None:
+            precip = x.get("precip")
+        return {"temp": x.get("temperature"),
+                "precip": precip,
+                "phrase": x.get("phrase") or x.get("iconPhrase") or ""}
+
+    by_date = {}
+    for d in days:
+        if not isinstance(d, dict):
+            continue
+        iso = (d.get("date") or "")[:10]
+        if not iso:
+            continue
+        by_date[iso] = {"day": _part(d.get("day")), "night": _part(d.get("night"))}
+    location = (root.get("location") or {}).get("localizedName", "") if isinstance(root.get("location"), dict) else ""
+    return {"location": location, "by_date": by_date}

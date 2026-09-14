@@ -1,0 +1,12 @@
+{
+  "skills": ["running-coach"],
+  "query": "I'm heading out for 8k this evening, how long is that going to take me?",
+  "expected_behavior": [
+    "Triggers the running-coach skill without being named, and routes to the planning capability rather than the digest or playlist",
+    "Reads references/run-planning.md and does not read the digest or playlist references",
+    "Runs scripts/cache.py status before projecting, and either refreshes the stale keys through the Strava MCP tools or states plainly that it is working from the cached data",
+    "Executes scripts/planning/plan_run.py 8 rather than reading its source or reimplementing Riegel inline",
+    "Reports the projected finish time, the pace, and the recommended effort band with the load-based reasoning behind it",
+    "Never asks for or uses a Strava access token"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 120,
+            "command": "printf '%s' \"${CLAUDE_PLUGIN_DATA}\" > \"${CLAUDE_PLUGIN_ROOT}/.plugin-data-dir\"; diff -q \"${CLAUDE_PLUGIN_ROOT}/skills/running-coach/requirements.txt\" \"${CLAUDE_PLUGIN_DATA}/requirements.txt\" >/dev/null 2>&1 || (python3 -m venv \"${CLAUDE_PLUGIN_DATA}/venv\" && \"${CLAUDE_PLUGIN_DATA}/venv/bin/pip\" install -q -r \"${CLAUDE_PLUGIN_ROOT}/skills/running-coach/requirements.txt\" && cp \"${CLAUDE_PLUGIN_ROOT}/skills/running-coach/requirements.txt\" \"${CLAUDE_PLUGIN_DATA}/requirements.txt\") || rm -f \"${CLAUDE_PLUGIN_DATA}/requirements.txt\""
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "Strava": {
+      "type": "http",
+      "url": "${user_config.strava_mcp_url}"
+    },
+    "Spotify": {
+      "type": "http",
+      "url": "${user_config.spotify_mcp_url}"
+    },
+    "AccuWeather": {
+      "type": "http",
+      "url": "${user_config.accuweather_mcp_url}"
+    }
+  }
+}

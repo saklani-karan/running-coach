@@ -1,0 +1,13 @@
+{
+  "skills": ["running-coach"],
+  "query": "Plan a 10k for tomorrow morning and make me a playlist for it",
+  "expected_behavior": [
+    "Recognises both capabilities are wanted and does planning first, because the projected finish time is the playlist's duration input",
+    "Reads references/run-planning.md and references/run-playlist.md, and no others",
+    "Runs scripts/planning/plan_run.py 10, then scripts/playlist/build_playlist.py 10, passing the same distance through rather than guessing a duration",
+    "Reads the pinned playlist id from scripts/cache.py show playlist_state instead of from the reference markdown",
+    "Follows the printed Spotify call sequence in order: remove_from_library on the pinned id, generate_playlist, save_to_library",
+    "Writes the new playlist id back with scripts/cache.py put playlist_state, and does not edit references/run-playlist.md to record it",
+    "Mentions that Spotify cannot rename a playlist, so Karan renames the new one himself"
+  ]
+}

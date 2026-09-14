@@ -1,0 +1,187 @@
+{#
+  digest_email.html.j2 — variable-driven weekly running digest email.
+
+  Everything is a variable: the theme (palette + font stacks), the masthead copy,
+  and each content block (ledger figures, goal meters, cities, field notes,
+  insights, plan). build_email.py assembles the context from digest_data.json and
+  renders this template. To restyle, change `theme`/`fonts`; to re-content, change
+  the data — no HTML edits needed.
+
+  Context:
+    theme   : paper, panel, ink, inksoft, rust, olive, hair, meterbg
+    fonts   : script (cursive), display (serif headings/figures), body (serif text)
+    masthead: kicker, date_range, title, subtext
+    ledger  : [ {value, unit, label} ]
+    goal    : prose, meters:[{label, fraction, pct, color}], trailing:[{km, wk}]
+    cities  : [ {name, region, runs, distance_km} ]
+    notes   : [ {label, quote, dateline, stats, footnote} ]
+    insights: [ {roman, title, text} ]
+    plan    : {label, headline, items:[...]}
+    colophon: line1, line2
+#}
+{%- macro section(title) -%}
+<div style="font-family:{{ fonts.script }};color:{{ theme.rust }};font-size:29px;line-height:1.1;text-align:center;margin:0 0 8px;">{{ title }}</div>
+{%- endmacro -%}
+
+{%- macro hr(weight=1, color=None, margin='0') -%}
+<div style="border-top:{{ weight }}px solid {{ color or theme.hair }};font-size:0;line-height:0;margin:{{ margin }};">&nbsp;</div>
+{%- endmacro -%}
+
+{%- macro figure(f) -%}
+<td style="padding:10px 6px;text-align:center;vertical-align:bottom;">
+  <div style="font-family:{{ fonts.figure }};color:{{ theme.ink }};font-size:28px;font-weight:700;line-height:1;letter-spacing:-.02em;">{{ f.value }}{% if f.unit %}<span style="font-family:{{ fonts.body }};font-size:15px;color:{{ theme.inksoft }};"> {{ f.unit }}</span>{% endif %}</div>
+  <div style="font-family:{{ fonts.body }};color:{{ theme.inksoft }};font-size:12px;letter-spacing:.16em;text-transform:uppercase;margin-top:9px;">{{ f.label }}</div>
+</td>
+{%- endmacro -%}
+
+{%- macro meter(m) -%}
+<table role="presentation" width="100%" style="border-collapse:collapse;margin-bottom:4px;">
+  <tr>
+    <td style="font-family:{{ fonts.body }};color:{{ theme.ink }};font-size:16px;">{{ m.label }}</td>
+    <td align="right" style="font-family:{{ fonts.figure }};color:{{ theme.ink }};font-size:15px;">{{ m.fraction }}
+      <span style="color:{{ m.color }};font-size:13px;">&nbsp;({{ m.pct }}%)</span></td>
+  </tr>
+</table>
+<div style="height:9px;background:{{ theme.meterbg }};border:1px solid {{ theme.hair }};">
+  <div style="height:9px;background:{{ m.color }};width:{{ [m.pct, 100]|min if m.pct >= 2 else 2 }}%;font-size:0;line-height:0;">&nbsp;</div>
+</div>
+{%- endmacro -%}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Weekly Almanac</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Pinyon+Script&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body{ margin:0; padding:0; background:{{ theme.paper }}; }
+  @media (max-width:600px){ .pad{ padding-left:26px !important; padding-right:26px !important; } .title{ font-size:44px !important; } }
+</style>
+</head>
+<body style="margin:0;padding:0;background:{{ theme.paper }};">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">{{ masthead.subtext }}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{{ theme.paper }};padding:30px 0;">
+<tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0"
+  style="max-width:600px;width:100%;background:{{ theme.paper }};border:1px solid {{ theme.hair }};">
+
+  <!-- MASTHEAD -->
+  <tr><td class="pad" style="padding:34px 46px 0;">
+    <table role="presentation" width="100%"><tr>
+      <td style="font-family:{{ fonts.body }};color:{{ theme.inksoft }};font-size:12px;letter-spacing:.24em;text-transform:uppercase;">{{ masthead.kicker }}</td>
+      <td align="right" style="font-family:{{ fonts.body }};color:{{ theme.inksoft }};font-size:12px;letter-spacing:.16em;text-transform:uppercase;">{{ masthead.date_range }}</td>
+    </tr></table>
+    <div style="margin:10px 0 6px;">{{ hr(2, theme.ink) }}</div>
+    <div style="margin:2px 0 14px;">{{ hr(1, theme.ink) }}</div>
+
+    <div class="title" style="font-family:{{ fonts.script }};color:{{ theme.ink }};font-size:58px;line-height:1.04;text-align:center;padding:4px 0 2px;">{{ masthead.title }}</div>
+    <div style="font-family:{{ fonts.display }};color:{{ theme.inksoft }};font-size:18px;font-style:italic;line-height:1.5;text-align:center;padding:12px 14px 20px;">{{ masthead.subtext }}</div>
+    {{ hr(1, theme.ink) }}
+  </td></tr>
+
+  <!-- THE LEDGER -->
+  <tr><td class="pad" style="padding:24px 46px 8px;">
+    {{ section('The Ledger') }}
+    <table role="presentation" width="100%" style="border-collapse:collapse;">
+      <tr>{% for f in ledger[:3] %}{{ figure(f) }}{% endfor %}</tr>
+      <tr><td colspan="3" style="padding:2px 30px;">{{ hr(1, theme.hair) }}</td></tr>
+      <tr>{% for f in ledger[3:6] %}{{ figure(f) }}{% endfor %}</tr>
+    </table>
+  </td></tr>
+
+  <!-- THE RECKONING -->
+  <tr><td class="pad" style="padding:20px 46px 6px;">
+    {{ hr(1, theme.ink, '0 0 18px') }}
+    {{ section('The Reckoning') }}
+    <p style="font-family:{{ fonts.body }};color:{{ theme.ink }};font-size:17px;line-height:1.62;margin:8px 0 20px;">
+      <span style="float:left;font-family:{{ fonts.display }};color:{{ theme.rust }};font-size:54px;line-height:.72;padding:6px 10px 0 0;">{{ goal.prose_dropcap }}</span>{{ goal.prose_rest }}
+    </p>
+    {% for m in goal.meters %}{{ meter(m) }}{% if not loop.last %}<div style="height:16px;"></div>{% endif %}{% endfor %}
+    <div style="margin-top:20px;text-align:center;font-family:{{ fonts.body }};color:{{ theme.inksoft }};font-size:12px;letter-spacing:.14em;text-transform:uppercase;">The weeks prior, in kilometres</div>
+    <div style="text-align:center;margin-top:8px;">
+      {% for w in goal.trailing %}<span style="font-family:{{ fonts.figure }};color:{{ theme.ink }};font-size:16px;">{{ w.km }}</span><span style="font-family:{{ fonts.body }};color:{{ theme.inksoft }};font-size:11px;"> {{ w.wk }}</span>{% if not loop.last %} &nbsp;&middot;&nbsp; {% endif %}{% endfor %}
+    </div>
+  </td></tr>
+
+  <!-- TERRITORY (cities) -->
+  <tr><td class="pad" style="padding:24px 46px 6px;">
+    {{ hr(1, theme.ink, '0 0 18px') }}
+    {{ section('Territory') }}
+    <table role="presentation" width="100%" style="border-collapse:collapse;margin-top:4px;">
+      {% for c in cities %}
+      <tr>
+        <td style="font-family:{{ fonts.display }};color:{{ theme.ink }};font-size:22px;padding:8px 0;">{{ c.name }}{% if c.region %}<span style="font-family:{{ fonts.body }};color:{{ theme.inksoft }};font-size:14px;font-style:italic;">, {{ c.region }}</span>{% endif %}</td>
+        <td align="right" style="font-family:{{ fonts.figure }};color:{{ theme.ink }};font-size:13px;white-space:nowrap;">{{ c.runs }} {{ 'run' if c.runs == 1 else 'runs' }} &nbsp;&middot;&nbsp; {{ c.distance_km }} km</td>
+      </tr>
+      {% if not loop.last %}<tr><td colspan="2">{{ hr(1, theme.hair) }}</td></tr>{% endif %}
+      {% endfor %}
+    </table>
+  </td></tr>
+
+  <!-- FIELD NOTES -->
+  <tr><td class="pad" style="padding:24px 46px 6px;">
+    {{ hr(1, theme.ink, '0 0 18px') }}
+    {{ section('Field Notes') }}
+    <table role="presentation" width="100%" style="border-collapse:collapse;margin-top:6px;">
+      {% for n in notes %}
+      <tr><td style="padding:14px 0;">
+        <table role="presentation" width="100%"><tr>
+          <td style="font-family:{{ fonts.display }};color:{{ theme.ink }};font-size:19px;font-style:italic;">{{ n.label }}{% if n.quote %} <span style="color:{{ theme.rust }};">&ldquo;{{ n.quote }}&rdquo;</span>{% endif %}</td>
+          <td align="right" style="font-family:{{ fonts.body }};color:{{ theme.inksoft }};font-size:12px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;">{{ n.dateline }}</td>
+        </tr></table>
+        <div style="font-family:{{ fonts.body }};color:{{ theme.ink }};font-size:16px;margin-top:8px;">{{ n.stats }}</div>
+        <div style="font-family:{{ fonts.body }};color:{{ theme.inksoft }};font-size:14.5px;font-style:italic;margin-top:5px;">{{ n.footnote }}</div>
+      </td></tr>
+      {% if not loop.last %}<tr><td>{{ hr() }}</td></tr>{% endif %}
+      {% endfor %}
+    </table>
+  </td></tr>
+
+  <!-- BETWEEN THE LINES -->
+  <tr><td class="pad" style="padding:24px 46px 6px;">
+    {{ hr(1, theme.ink, '0 0 18px') }}
+    {{ section('Between the Lines') }}
+    <table role="presentation" width="100%" style="border-collapse:collapse;margin-top:6px;">
+      {% for i in insights %}
+      <tr><td style="padding:12px 0;vertical-align:top;">
+        <table role="presentation" width="100%"><tr>
+          <td width="46" style="font-family:{{ fonts.display }};color:{{ theme.rust }};font-size:26px;font-style:italic;vertical-align:top;line-height:1;">{{ i.roman }}.</td>
+          <td>
+            <div style="font-family:{{ fonts.display }};color:{{ theme.ink }};font-size:18px;font-weight:700;">{{ i.title }}</div>
+            <div style="font-family:{{ fonts.body }};color:{{ theme.ink }};font-size:16px;line-height:1.6;margin-top:3px;">{{ i.text }}</div>
+          </td>
+        </tr></table>
+      </td></tr>
+      {% endfor %}
+    </table>
+  </td></tr>
+
+  <!-- THE WEEK AHEAD -->
+  <tr><td class="pad" style="padding:24px 46px 8px;">
+    {{ hr(1, theme.ink, '0 0 18px') }}
+    <div style="background:{{ theme.panel }};padding:24px 26px;">
+      {{ section(plan.label) }}
+      <div style="font-family:{{ fonts.display }};color:{{ theme.ink }};font-size:23px;font-style:italic;text-align:center;margin:2px 0 16px;">{{ plan.headline }}</div>
+      <table role="presentation" width="100%" style="border-collapse:collapse;">
+        {% for it in plan['items'] %}
+        <tr>
+          <td width="26" style="font-family:{{ fonts.display }};color:{{ theme.rust }};font-size:17px;vertical-align:top;line-height:1.5;">&mdash;</td>
+          <td style="font-family:{{ fonts.body }};color:{{ theme.ink }};font-size:16px;line-height:1.55;padding-bottom:9px;">{{ it }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </td></tr>
+
+  <!-- COLOPHON -->
+  <tr><td class="pad" style="padding:16px 46px 34px;">
+    {{ hr(1, theme.ink, '0 0 14px') }}
+    <div style="font-family:{{ fonts.body }};color:{{ theme.inksoft }};font-size:12.5px;line-height:1.7;text-align:center;letter-spacing:.04em;">
+      {{ colophon.line1 }}<br>{{ colophon.line2 }}
+    </div>
+  </td></tr>
+
+</table>
+</td></tr></table>
+</body></html>

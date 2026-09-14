@@ -1,0 +1,13 @@
+{
+  "skills": ["running-coach"],
+  "query": "Put together my weekly run recap email",
+  "expected_behavior": [
+    "Routes to the digest capability and reads references/weekly-digest.md",
+    "Runs scripts/cache.py status, then scripts/cache.py validate --for digest, and refreshes any missing key by calling the MCP tool the output names and piping the response into scripts/cache.py put",
+    "Builds the digest with scripts/digest/run_pipeline.py rather than running the sub-steps by hand or rewriting the analysis",
+    "Produces weekly_run_digest.html in the resolved output directory and reports the distance against the rolling goal, the percentage, and the subject line",
+    "Surfaces any note: or warning: lines from the pipeline, including which MCP call would fill the gap, instead of dropping that content silently",
+    "Hands over the HTML file path and does not claim to have emailed it",
+    "Does not hardcode a weekly goal or invent insights that the data does not support"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "name": "running-coach",
+  "displayName": "Running Coach",
+  "version": "1.0.0",
+  "description": "Plans runs, builds a weekly running digest email, and generates run playlists from your Strava, Spotify and AccuWeather data. Projects pace and finish time from your own recent efforts, recommends an effort band from your trailing load, and renders a self-contained HTML recap of your week.",
+  "author": {
+    "name": "Karan Saklani"
+  },
+  "license": "MIT",
+  "keywords": [
+    "running",
+    "strava",
+    "spotify",
+    "accuweather",
+    "training",
+    "fitness"
+  ],
+  "userConfig": {
+    "strava_mcp_url": {
+      "type": "string",
+      "title": "Strava MCP URL",
+      "description": "Strava's official remote MCP server. Requires a Strava subscription; you authorise it on first use.",
+      "default": "https://mcp.strava.com/mcp"
+    },
+    "spotify_mcp_url": {
+      "type": "string",
+      "title": "Spotify MCP URL",
+      "description": "Community remote MCP server with playlist generation. Only needed for the playlist capability. Repoint this if you use a different Spotify connector.",
+      "default": "https://spotify-mcp-u1c9.onrender.com/mcp"
+    },
+    "accuweather_mcp_url": {
+      "type": "string",
+      "title": "AccuWeather MCP URL",
+      "description": "Community remote MCP server used to label past runs with climate context. Optional; the digest builds without it. The default is a preview endpoint whose token rotates, so expect to repoint this.",
+      "default": "https://edge.vinkius.com/vk_preview_jHdcif42kOJoVpy4SjMaaktTeWLAMX52gaF575hK/mcp"
+    }
+  }
+}

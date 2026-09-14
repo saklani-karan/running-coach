@@ -1,0 +1,22 @@
+# Secrets — the skill itself needs none, this is a safety net
+.env
+*.token
+
+# Built archives
+dist/
+
+# The cache and generated output now live in ~/.running-coach, outside the
+# repo. Nothing to ignore here — but never commit a copy: it holds real athlete
+# data, including GPS polylines that decode to routes from home.
+
+# Written by the plugin's SessionStart hook, per-install
+.plugin-data-dir
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
